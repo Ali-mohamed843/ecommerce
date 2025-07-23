@@ -1,43 +1,43 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useTranslation } from 'react-i18next';
+import { useCurrency } from "../context/CurrencyContext";
+import { formatNumber } from '../utils/formatNumber';
 
-const ProductCard = ({ product, onAddToCart }) => {
+
+const ProductCard = ({ product, onAddToCart, showEgp }) => {
   const { dispatch } = useCart();
-  const {
-    id,
-    title,
-    price,
-    description,
-    category,
-    image,
-  } = product;
-
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const { currency } = useCurrency();
+
+
+  const title = product[i18n.language]?.title || product.title;
+  const description = product[i18n.language]?.description || product.description;
+  const category = product[i18n.language]?.category || product.category;
 
   const overview = showFullDescription
     ? description
     : `${description?.substring(0, 70)}...`;
 
   const handleClick = () => {
-    navigate(`/product/${id}`);
+    navigate(`/product/${product.id}`);
   };
 
-   const handleAddToCart = (e) => {
+  const handleAddToCart = (e) => {
     e.stopPropagation();
     dispatch({ type: "ADD_TO_CART", payload: product }); 
     if (onAddToCart) {
-      onAddToCart(); 
+      onAddToCart(title);
     }
   };
 
   return (
-    <div
-      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer flex flex-col"
-    >
+    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer flex flex-col">
       <img
-        src={image}
+        src={product.image}
         alt={title}
         className="w-full h-64 object-contain bg-gray-100 p-4"
         onClick={handleClick}
@@ -58,20 +58,22 @@ const ProductCard = ({ product, onAddToCart }) => {
               }}
               className="text-orange-600 font-bold text-md ml-1 hover:underline"
             >
-              {showFullDescription ? 'Show less' : 'Read more'}
+              {showFullDescription ? t("showLess") : t("readMore")}
             </button>
           </p>
         </div>
 
         <div className="mt-auto">
-          <p className="text-xl font-bold text-orange-600 mb-5">
-            {price} <span className='ml-1'>$</span>
+          <p className="text-lg font-bold text-black-800 mb-3">
+            {currency === "USD"
+              ? `${formatNumber(product.price)} $`
+              : `${formatNumber(product.price * 50)} ${t("egp")}`}
           </p>
           <button
             onClick={handleAddToCart}
             className="bg-yellow-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-yellow-700 transition duration-200 w-full"
           >
-            Add to Cart
+            {t("addToCart")}
           </button>
         </div>
       </div>
@@ -80,3 +82,4 @@ const ProductCard = ({ product, onAddToCart }) => {
 };
 
 export default ProductCard;
+

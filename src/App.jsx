@@ -1,8 +1,12 @@
-import { useState } from 'react';
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+} from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import ProductDetails from './pages/ProductDetails.jsx';
-import Cart from './pages/cart.jsx';
+import Cart from './pages/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import Receipt from './pages/Receipt.jsx';
 
@@ -18,11 +22,9 @@ const router = createBrowserRouter(
     </Route>
   )
 );
-const App = () => {
-  return (
-    <><RouterProvider router={router} /></>
-  );
-};
 
-export default App
+const App = () => <RouterProvider router={router} />;
+
+export default App;
+
 
