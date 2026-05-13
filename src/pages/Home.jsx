@@ -6,13 +6,11 @@ import Filter from "../components/Filter.jsx";
 import { useDebounce } from "react-use";
 import Hero from "../components/Hero.jsx";
 import { useTranslation } from "react-i18next";
-import arDescriptions from "../data/arDescriptions";
-import arTitles from "../data/arTitles.js";
 import arCategories from "../data/arCategories.js";
-import { useCurrency } from "../context/CurrencyContext";
-import { AlertCircle } from "react-feather";
+import arTitles from "../data/arTitles.js";
+import arDescriptions from "../data/arDescriptions.js";
 import { useToast } from '../context/ToastContext';
-import { databases } from '../appwriteConfig';
+import { dummyProducts } from "../data/dummyProducts.js";
 
 
 const Home = () => {
@@ -26,102 +24,25 @@ const Home = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState([0, 1000]);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const { t, i18n } = useTranslation();
-  const { currency, toggleCurrency } = useCurrency();
   const { showToast } = useToast();
-  const [cartCount, setCartCount] = useState(0);
-  const [averageRatings, setAverageRatings] = useState({});
-
- 
 
   useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
 
-  const API_URL = "https://fakestoreapi.com/products";
+  const filteredProducts = products.filter((product) => {
+    const productRawCategory = product.en.category;
+    const matchesCategory = category ? productRawCategory === category : true;
+    const title = product[i18n.language]?.title || product.en.title;
+    const matchesSearch = debouncedSearchTerm
+      ? title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+      : true;
+    const matchesPrice =
+      product.price >= selectedPriceRange[0] &&
+      product.price <= selectedPriceRange[1];
 
-const fetchProducts = async () => {
-  setIsLoading(true);
-  setErrorMessage("");
+    return matchesCategory && matchesSearch && matchesPrice;
+  });
 
-  try {
-
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("Invalid response");
-  
-    const ratingsResponse = await databases.listDocuments(
-      '687f74bf001cb56191cb', 
-      '687f7590001b1d8bbc3c' 
-    );
-    const ratings = ratingsResponse.documents;
-
-   
-    const ratingMap = {};
-    ratings.forEach(({ productId, rating }) => {
-      if (!ratingMap[productId]) {
-        ratingMap[productId] = [];
-      }
-      ratingMap[productId].push(rating);
-    });
-
- 
-     const averages = {};
-    for (const [productId, ratingsArray] of Object.entries(ratingMap)) {
-      const avg = ratingsArray.reduce((a, b) => a + b, 0) / ratingsArray.length;
-      averages[productId] = avg;
-    }
-
-
-    const fullData = data.map((product) => ({
-      ...product,
-      en: {
-        title: product.title,
-        description: product.description,
-        category: product.category,
-      },
-      ar: {
-        title: arTitles[product.id] || product.title,
-        description: arDescriptions[product.id] || product.description,
-        category: arCategories[product.category] || product.category,
-      },
-      averageRating: averages[product.id] || 0, 
-    }));
-
-    fullData.sort((a, b) => b.averageRating - a.averageRating);
-
-    setProducts(fullData);
-    setAverageRatings(averages);
-
-    const uniqueCategories = [...new Set(data.map((item) => item.category))];
-    setCategories(uniqueCategories);
-
-    const prices = data.map((item) => item.price);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    setPriceRange({ min: minPrice, max: maxPrice });
-
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    setErrorMessage(t("errorFetching"));
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-    const filteredProducts = products.filter((product) => {
-      const productRawCategory = product.en.category;
-      const matchesCategory = category ? productRawCategory === category : true;
-      const title = product[i18n.language]?.title || product.en.title;
-      const matchesSearch = debouncedSearchTerm
-        ? title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-        : true;
-      const matchesPrice =
-        product.price >= selectedPriceRange[0] &&
-        product.price <= selectedPriceRange[1];
-
-      return matchesCategory && matchesSearch && matchesPrice;
-    });
-
-    const formattedCategories = categories.map((cat) => ({
+  const formattedCategories = categories.map((cat) => ({
     key: cat,
     en: cat,
     ar: arCategories[cat] || cat,
@@ -129,14 +50,46 @@ const fetchProducts = async () => {
 
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const loadProducts = () => {
+      setIsLoading(true);
+      setErrorMessage("");
 
-  useEffect(() => {
-    if (!searchTerm) {
-      fetchProducts();
-    }
-  }, [category]);
+      try {
+        const data = dummyProducts;
+        if (!Array.isArray(data)) throw new Error("Invalid response");
+
+        const fullData = data.map((product) => ({
+          ...product,
+          en: {
+            title: product.title,
+            description: product.description,
+            category: product.category,
+          },
+          ar: {
+            title: product.ar?.title || arTitles[product.id] || product.title,
+            description: product.ar?.description || arDescriptions[product.id] || product.description,
+            category: arCategories[product.category] || product.category,
+          },
+          averageRating: product.rating?.rate || 0,
+        }));
+
+        fullData.sort((a, b) => b.averageRating - a.averageRating);
+
+        setProducts(fullData);
+        setCategories([...new Set(data.map((item) => item.category))]);
+
+        const prices = data.map((item) => item.price);
+        setPriceRange({ min: Math.min(...prices), max: Math.max(...prices) });
+      } catch (error) {
+        console.error("Error loading products:", error);
+        setErrorMessage(t("errorFetching"));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [t]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -153,10 +106,9 @@ const fetchProducts = async () => {
     <main className="min-h-screen bg-gray-100 text-gray-800">
       <header className="shadow bg-white sticky top-0 z-50">
         <Navbar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedPriceRange={selectedPriceRange}
-      />
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
       </header>
 
       <section className="px-4 md:px-16 py-10">

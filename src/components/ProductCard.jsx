@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useTranslation } from 'react-i18next';
-import { useCurrency } from "../context/CurrencyContext";
+import { useCurrency } from "../context/currencyContext";
 import { formatNumber } from '../utils/formatNumber';
 
 
-const ProductCard = ({ product, onAddToCart, showEgp }) => {
+const ProductCard = ({ product, onAddToCart }) => {
   const { dispatch } = useCart();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();

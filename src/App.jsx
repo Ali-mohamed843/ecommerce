@@ -3,6 +3,7 @@ import {
   createRoutesFromElements,
   Route,
   RouterProvider,
+  Outlet,
 } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import ProductDetails from './pages/ProductDetails.jsx';
@@ -13,7 +14,7 @@ import Receipt from './pages/Receipt.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/">
+    <Route path="/" element={<Outlet />}>
       <Route index element={<Home />} />
       <Route path="product/:id" element={<ProductDetails />} />
       <Route path="cart" element={<Cart />} />
@@ -26,5 +27,3 @@ const router = createBrowserRouter(
 const App = () => <RouterProvider router={router} />;
 
 export default App;
-
-

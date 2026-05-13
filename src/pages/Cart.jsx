@@ -1,14 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import Checkout from './Checkout';
 import { FaTimes } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
-import { useState } from 'react';
-import { useCurrency } from '../context/CurrencyContext';
+import { useCurrency } from '../context/currencyContext';
 import { useTranslation } from 'react-i18next';
 import arTitles from '../data/arTitles';
-import arDescriptions from '../data/arDescriptions';
-import arCategories from '../data/arCategories';
 import { formatNumber } from '../utils/formatNumber';
 
 const Cart = () => {
@@ -23,7 +19,7 @@ const Cart = () => {
       : numericPrice.toFixed(2);
   };
   const symbol = currency === 'EGP' ? 'EGP' : '$';
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
 
   return (

@@ -3,9 +3,9 @@ import Search from './Search';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useCurrency } from "../context/CurrencyContext";
+import { useCurrency } from "../context/currencyContext";
 
-const Navbar = ({ searchTerm, setSearchTerm, selectedPriceRange, showEgp, setShowEgp }) => {
+const Navbar = ({ searchTerm = "", setSearchTerm }) => {
   const { cartCount } = useCart();
   const { currency, toggleCurrency } = useCurrency();
   const { t, i18n } = useTranslation();
@@ -25,9 +25,11 @@ const Navbar = ({ searchTerm, setSearchTerm, selectedPriceRange, showEgp, setSho
       </div>
 
 
-      <div className="w-full md:max-w-md">
-        <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      </div>
+      {typeof setSearchTerm === 'function' && (
+        <div className="w-full md:max-w-md">
+          <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        </div>
+      )}
 
       <ul className="flex justify-center md:justify-end items-center space-x-4 md:space-x-8 text-base font-medium text-gray-700">
         <li>

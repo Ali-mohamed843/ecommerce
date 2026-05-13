@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useCurrency } from '../context/CurrencyContext';
+import { useCurrency } from '../context/currencyContext';
 import { useTranslation } from 'react-i18next';
 import arTitles from '../data/arTitles';
 import { formatNumber } from '../utils/formatNumber';
@@ -53,5 +53,3 @@ const Receipt = () => {
 };
 
 export default Receipt;
-
-
